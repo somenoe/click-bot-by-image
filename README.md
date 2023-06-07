@@ -50,7 +50,7 @@ The script expects the files in the `target` folder to follow specific naming co
 You can build the script into an executable file using PyInstaller:
 
 ```
-pyinstaller --onefile main.py
+pyinstaller --onefile main.py --name clickbot                      
 ```
 
 The executable file will be in the `dist` folder.
