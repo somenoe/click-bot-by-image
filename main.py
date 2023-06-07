@@ -1,4 +1,3 @@
-# import sys
 import time
 import string
 import cv2
@@ -36,7 +35,7 @@ def template_matching(
     return percent_match, max_loc
 
 
-def perform_image_recognition_and_click(file_name: string):
+def bot_click(file_name: string):
     # Load the reference and target images
     target_image = cv2.imread(f"{TARGET_FOLDER}/{file_name}")
 
@@ -62,10 +61,19 @@ def perform_image_recognition_and_click(file_name: string):
     # Get the coordinates of the best match
     top_left = max_loc
 
+    save_result_image(file_name, reference_image, target_image, top_left)
+
     # Calculate the click position
     click_x = top_left[0] + (target_image.shape[1] // 2)
     click_y = top_left[1] + (target_image.shape[0] // 2)
 
+    # Simulate a click at the best match location
+    pyautogui.click(click_x, click_y)
+
+    print(f"✅ Clicked at location: ({click_x}, {click_y})")
+
+
+def save_result_image(file_name: string, reference_image, target_image, top_left):
     # Draw a rectangle around the target on a copy of the reference image
     image_with_rectangle = reference_image.copy()
     bottom_right = (
@@ -77,14 +85,40 @@ def perform_image_recognition_and_click(file_name: string):
     # Save the image with the rectangle
     cv2.imwrite(f"./result/{file_name}.png", image_with_rectangle)
 
-    # Simulate a click at the best match location
-    pyautogui.click(click_x, click_y)
-
-    print(f"@{file_name} Clicked at location: ({click_x}, {click_y})")
+    print(f"✅ Save result image: {file_name}.png")
 
 
-def bot_type(text: string):
-    pyautogui.typewrite(text)
+def bot_press(key: str):
+    pyautogui.press(key)
+    print(f"✅ Press: {key}")
+
+
+def bot_shortcut(keymap: str):
+    """Simulates holding down each key and releasing them in reverse order.
+
+    Args:
+    keymap (str): keymap, example: "ctrl+shift+alt+tab"
+    """
+
+    # remove space
+    keymap = keymap.replace(" ", "")
+    # split by "+"
+    list_key = keymap.split("+")
+
+    # key down all key in order
+    for key in list_key:
+        pyautogui.keyDown(key)
+
+    # key up all key in reverse order
+    for key in reversed(list_key):
+        pyautogui.keyUp(key)
+
+    print(f"✅ Shortcut: {keymap}")
+
+
+def bot_type(message: str):
+    pyautogui.typewrite(message)
+    print(f"✅ Type: {message}")
 
 
 def perform_image_recognition_on_folder():
@@ -99,8 +133,33 @@ def perform_image_recognition_on_folder():
     print("Files in the target folder: ", files)
 
     for file in files:
-        # perform_image_recognition_and_click(file)
-        print(f"{file>20}")
+        print(f"{file:-^30s}")
+
+        # separate operate by file name
+        file_name, file_extension = os.path.splitext(file)
+
+        if file_extension == ".png":
+            bot_click(file)
+            continue
+
+        # separate order in file name [order]_[detail] ex. 1_space.pk
+        sep_file_name = file_name.split("_")
+        # join detail by "_" ex. space_bar
+        detail = "_".join(sep_file_name[1:])
+
+        if file_extension == ".bt":
+            bot_type(detail)
+        elif file_extension == ".bp":
+            bot_press(detail)
+        elif file_extension == ".bs":
+            bot_shortcut(detail)
+        # wait 1 sec
+        time.sleep(1)
+
+
+def print_keylist():
+    print("All key list, use in press_key()")
+    print(pyautogui.KEYBOARD_KEYS)
 
 
 def init():
@@ -116,8 +175,3 @@ def main():
 
 
 main()
-
-# TODO: add function wait until the image appear, recheck every 1 sec
-# TODO: add function to handle acion in file name ([order]_[action]_[detail].png)
-# ex. 1_click_sumbit.png, 2_wait_for_upload.png, 3_click_close_page.png
-# only care for first character in action ex. c(lick), w(ait), s(leep), p(ress)
