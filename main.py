@@ -6,6 +6,10 @@ import os
 import pyautogui
 
 TARGET_FOLDER = "./targets"
+MAX_RUNTIMES = 120
+MIN_MATCH_PERCENT = 90
+DELAY_EACH_RECHECK = 1
+DELAY_EACH_STEP = 0.7
 
 
 def capture_reference_image():
@@ -40,8 +44,6 @@ def bot_click(file_name: string):
     target_image = cv2.imread(f"{TARGET_FOLDER}/{file_name}")
 
     runtimes = 0
-    MAX_RUNTIMES = 15
-    MIN_MATCH_PERCENT = 90
     percent_match = 0
     while percent_match <= MIN_MATCH_PERCENT:
         reference_image = capture_reference_image()
@@ -55,8 +57,8 @@ def bot_click(file_name: string):
             if runtimes >= MAX_RUNTIMES:
                 print(f"@{file_name} Not found, 10 times, stop.")
                 return
-            # wait 1 sec
-            time.sleep(1)
+
+            time.sleep(DELAY_EACH_RECHECK)
 
     # Get the coordinates of the best match
     top_left = max_loc
@@ -153,8 +155,8 @@ def perform_image_recognition_on_folder():
             bot_press(detail)
         elif file_extension == ".bs":
             bot_shortcut(detail)
-        # wait 1 sec
-        time.sleep(1)
+
+        time.sleep(DELAY_EACH_STEP)
 
 
 def print_keylist():
@@ -170,6 +172,7 @@ def init():
 
 
 def main():
+    print("Start bot. version 0.1.1")
     init()
     perform_image_recognition_on_folder()
 
